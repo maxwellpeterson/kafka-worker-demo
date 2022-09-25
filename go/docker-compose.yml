@@ -1,0 +1,21 @@
+version: "3.9"
+services:
+  producer:
+    build:
+      context: .
+      dockerfile: ./cmd/produce/Dockerfile
+    depends_on:
+      - "broker"
+    command: ["-broker", "broker:8787"]
+    stdin_open: true
+  consumer:
+    build:
+      context: .
+      dockerfile: ./cmd/consume/Dockerfile
+    depends_on:
+      - "broker"
+    command: ["-broker", "broker:8787"]
+  broker:
+    image: "ghcr.io/maxwellpeterson/kafka-worker:main"
+    volumes:
+      - .dev.vars:/app/.dev.vars

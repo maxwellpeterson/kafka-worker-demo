@@ -43,10 +43,12 @@ func main() {
 	ctx := context.Background()
 	for scanner.Scan() {
 		record := &kgo.Record{Topic: *topic, Value: scanner.Bytes()}
-		if err := cl.ProduceSync(ctx, record).FirstErr(); err != nil {
+		res, err := cl.ProduceSync(ctx, record).First()
+		if err != nil {
 			log.Fatal(errors.Wrap(err, "produce record failed"))
 		}
-		fmt.Printf("Produced message: %s\nWaiting for input:\n", string(record.Value))
+		fmt.Printf("Produced (topic: %s, partition: %d, offset: %d): %s\nWaiting for input:\n",
+			res.Topic, res.Partition, res.Offset, string(res.Value))
 	}
 
 	if err := scanner.Err(); err != nil {

@@ -11,7 +11,6 @@ import (
 
 	"github.com/maxwellpeterson/kafka-websocket-shim/pkg/shim"
 	"github.com/pkg/errors"
-	"github.com/twmb/franz-go/pkg/kerr"
 	"github.com/twmb/franz-go/pkg/kgo"
 	"github.com/twmb/franz-go/pkg/kversion"
 )
@@ -47,15 +46,12 @@ func main() {
 		cancel()
 	}()
 
-	fmt.Printf("Consuming messages from: %s\nPress Ctrl+C to stop\n\n", *topic)
+	fmt.Printf("Consuming messages from topic: %s\nPress Ctrl+C to stop\n\n", *topic)
 	for {
 		fetches := cl.PollFetches(ctx)
 		for _, err := range fetches.Errors() {
-			if errors.Is(err.Err, kerr.RequestTimedOut) {
-				// Keep polling (isn't this a retriable error?)
-				continue
-			} else if errors.Is(err.Err, context.Canceled) {
-				// User interrupt, stop the program
+			if errors.Is(err.Err, context.Canceled) {
+				// User pressed Ctrl+C, stop the program
 				return
 			} else {
 				log.Fatal(errors.Wrap(err.Err, "poll topic failed"))
@@ -65,7 +61,8 @@ func main() {
 		iter := fetches.RecordIter()
 		for !iter.Done() {
 			record := iter.Next()
-			fmt.Printf("Consumed message: %s\n", string(record.Value))
+			fmt.Printf("Consumed (topic: %s, partition: %d, offset: %d): %s\n",
+				record.Topic, record.Partition, record.Offset, string(record.Value))
 		}
 	}
 }

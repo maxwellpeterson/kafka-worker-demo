@@ -21,6 +21,7 @@ consumer = KafkaConsumer(
     bootstrap_servers=[args.broker],
     security_protocol="SSL" if args.tls else "PLAINTEXT",
     api_version=(0, 8, 0),
+    auto_offset_reset="earliest",
 )
 
 print("Consuming messages from topic: {}\nPress Ctrl+C to stop\n".format(args.topic))

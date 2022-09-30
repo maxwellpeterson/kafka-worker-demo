@@ -36,3 +36,5 @@ for line in sys.stdin:
             msg_meta.topic, msg_meta.partition, msg_meta.offset, msg
         )
     )
+
+producer.close()
